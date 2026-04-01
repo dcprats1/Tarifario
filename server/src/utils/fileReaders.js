@@ -3,12 +3,31 @@ import { parse as parseCsv } from 'csv-parse/sync';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 
+function isLikelyHeaderRow(row = []) {
+  if (!row.length) return false;
+  const asStrings = row.map(cell => String(cell || '').trim().toLowerCase());
+  const keywordHits = asStrings.filter(cell => /peso|weight|price|precio|zona|zone|destino|tarifa/.test(cell)).length;
+  const numericLike = asStrings.filter(cell => /^\d+(?:[.,]\d+)?$/.test(cell)).length;
+
+  return keywordHits > 0 && numericLike <= Math.floor(asStrings.length / 2);
+}
+
 export async function extractRawRows(file) {
   const ext = file.originalname.toLowerCase().split('.').pop();
 
   if (ext === 'csv') {
-    const records = parseCsv(file.buffer.toString('utf8'), { columns: true, skip_empty_lines: true });
-    return records.map(row => Object.values(row));
+    const rows = parseCsv(file.buffer.toString('utf8'), {
+      columns: false,
+      skip_empty_lines: true,
+      relax_column_count: true,
+      trim: true
+    });
+
+    if (rows.length > 0 && isLikelyHeaderRow(rows[0])) {
+      return rows.slice(1);
+    }
+
+    return rows;
   }
 
   if (ext === 'xlsx' || ext === 'xls') {

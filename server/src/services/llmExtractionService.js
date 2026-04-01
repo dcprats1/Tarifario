@@ -5,6 +5,52 @@ const providerMap = {
   deepseek: runDeepSeekExtraction
 };
 
+function toNumber(value, fallback) {
+  const parsed = Number(String(value).replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function normalizeTier(tier) {
+  if (!tier || typeof tier !== 'object') return null;
+  const max = toNumber(tier.max, null);
+  const price = toNumber(tier.price, null);
+  if (max === null || price === null) return null;
+
+  return {
+    max,
+    price,
+    ...(tier.zone ? { zone: String(tier.zone).toLowerCase() } : {})
+  };
+}
+
+function sanitizeRules(baseRules, llmRules = {}, llmWeightTiers = []) {
+  const sanitizedRules = {
+    ...baseRules,
+    maxWeightKg: toNumber(llmRules.maxWeightKg, baseRules.maxWeightKg),
+    volumetricDivisor: toNumber(llmRules.volumetricDivisor, baseRules.volumetricDivisor),
+    fuelSurchargePct: toNumber(llmRules.fuelSurchargePct, baseRules.fuelSurchargePct),
+    insurancePct: toNumber(llmRules.insurancePct, baseRules.insurancePct),
+    overweightPenalty: toNumber(llmRules.overweightPenalty, baseRules.overweightPenalty),
+    zoneMultipliers: {
+      ...baseRules.zoneMultipliers,
+      ...(llmRules.zoneMultipliers && typeof llmRules.zoneMultipliers === 'object'
+        ? {
+            local: toNumber(llmRules.zoneMultipliers.local, baseRules.zoneMultipliers?.local ?? 1),
+            nacional: toNumber(llmRules.zoneMultipliers.nacional, baseRules.zoneMultipliers?.nacional ?? 1.15),
+            internacional: toNumber(llmRules.zoneMultipliers.internacional, baseRules.zoneMultipliers?.internacional ?? 1.35)
+          }
+        : {})
+    }
+  };
+
+  const normalizedTiers = (Array.isArray(llmWeightTiers) ? llmWeightTiers : [])
+    .map(normalizeTier)
+    .filter(Boolean);
+
+  sanitizedRules.weightTiers = normalizedTiers.length > 0 ? normalizedTiers : baseRules.weightTiers;
+  return sanitizedRules;
+}
+
 export async function enrichTariffWithLlm({ provider, rows, confidence }) {
   const threshold = Number(process.env.PARSER_CONFIDENCE_THRESHOLD || 0.65);
   if (confidence >= threshold) {
@@ -29,11 +75,7 @@ export async function enrichTariffWithLlm({ provider, rows, confidence }) {
     return {
       provider: {
         ...provider,
-        rules: {
-          ...provider.rules,
-          ...parsed.rules,
-          weightTiers: parsed.weightTiers?.length ? parsed.weightTiers : provider.rules.weightTiers
-        }
+        rules: sanitizeRules(provider.rules, parsed.rules, parsed.weightTiers)
       },
       strategy: 'llm',
       llmProvider

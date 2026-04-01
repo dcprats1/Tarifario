@@ -66,6 +66,7 @@ docker compose up --build
 
 Configuración útil:
 - `MAX_UPLOAD_MB` (por defecto `10`) para limitar tamaño de archivos en upload con Multer memoryStorage.
+- `JWT_SECRET` obligatorio (mínimo 32 caracteres) para firmar/validar tokens.
 
 ## Roadmap inmediato
 
