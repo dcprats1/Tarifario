@@ -9,35 +9,51 @@ import { exportAsCsv, exportAsJson, exportAsXlsx } from '../services/exportServi
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
-
-router.post('/upload', requireAuth, requireRole('admin', 'operador'), upload.single('document'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: 'Debes subir un documento' });
-
-    const rows = await extractRawRows(req.file);
-    const parsed = parseTariff({
-      rows,
-      providerHint: req.body.providerHint,
-      sourceFile: req.file.originalname
-    });
-
-    const llmProcessed = await enrichTariffWithLlm({ provider: parsed, rows, confidence: parsed.confidence });
-
-    const providerWithId = {
-      ...llmProcessed.provider,
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      createdBy: req.user.sub,
-      llmStrategy: llmProcessed.strategy,
-      llmProvider: llmProcessed.llmProvider
-    };
-
-    store.providers.push(providerWithId);
-
-    res.status(201).json({ provider: providerWithId });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+const maxUploadMb = Number(process.env.MAX_UPLOAD_MB || 10);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: maxUploadMb * 1024 * 1024
   }
+});
+
+router.post('/upload', requireAuth, requireRole('admin', 'operador'), (req, res) => {
+  upload.single('document')(req, res, async error => {
+    if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ message: `Archivo demasiado grande. Límite: ${maxUploadMb}MB.` });
+    }
+
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    try {
+      if (!req.file) return res.status(400).json({ message: 'Debes subir un documento' });
+
+      const rows = await extractRawRows(req.file);
+      const parsed = parseTariff({
+        rows,
+        providerHint: req.body.providerHint,
+        sourceFile: req.file.originalname
+      });
+
+      const llmProcessed = await enrichTariffWithLlm({ provider: parsed, rows, confidence: parsed.confidence });
+
+      const providerWithId = {
+        ...llmProcessed.provider,
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        createdBy: req.user.sub,
+        llmStrategy: llmProcessed.strategy,
+        llmProvider: llmProcessed.llmProvider
+      };
+
+      store.providers.push(providerWithId);
+
+      return res.status(201).json({ provider: providerWithId });
+    } catch (e) {
+      return res.status(400).json({ message: e.message });
+    }
+  });
 });
 
 router.get('/tariffs', requireAuth, (req, res) => {
@@ -69,7 +85,7 @@ router.post('/quote', requireAuth, (req, res) => {
     .map(provider => quoteProvider(provider, shipment))
     .sort((a, b) => a.total - b.total);
 
-  res.json({ quotes });
+  return res.json({ quotes });
 });
 
 router.get('/comparison', requireAuth, (req, res) => {
@@ -83,7 +99,7 @@ router.get('/comparison', requireAuth, (req, res) => {
     overweightPenalty: provider.rules.overweightPenalty
   }));
 
-  res.json({ items });
+  return res.json({ items });
 });
 
 router.post('/export', requireAuth, (req, res) => {
@@ -107,7 +123,7 @@ router.post('/export', requireAuth, (req, res) => {
 
   res.setHeader('Content-Type', exported.contentType);
   res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
-  res.send(exported.buffer);
+  return res.send(exported.buffer);
 });
 
 export default router;

@@ -9,7 +9,7 @@ const defaultWeightTiers = [
 const knownZones = ['local', 'nacional', 'internacional'];
 
 function normalizeZone(value = '') {
-  const text = value.toLowerCase().trim();
+  const text = String(value).toLowerCase().trim();
   if (text.includes('inter')) return 'internacional';
   if (text.includes('nac')) return 'nacional';
   if (text.includes('loc')) return 'local';
@@ -21,18 +21,47 @@ function findNumber(text, pattern, fallback) {
   return match ? Number(match[1].replace(',', '.')) : fallback;
 }
 
+function parseNumberLike(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return null;
+
+  const normalized = value.replace(/\s/g, '').replace(',', '.');
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function parseRowToTier(row) {
   if (!row?.length) return null;
-  const text = row.join(' ').toLowerCase();
-  const weightMatch = text.match(/(\d+(?:[.,]\d+)?)\s?(?:kg|kilos?)?/);
-  const priceMatch = text.match(/(\d+(?:[.,]\d+)?)\s?€/);
-  if (!weightMatch || !priceMatch) return null;
+  const text = row.map(String).join(' ').toLowerCase();
+
+  const numericCells = row
+    .map(parseNumberLike)
+    .filter(value => value !== null && value >= 0);
+
+  const weightFromRegex = text.match(/(\d+(?:[.,]\d+)?)\s?(?:kg|kilos?)?/);
+  const hasCurrencyToken = /€|eur|usd|\$/.test(text);
+  const priceFromCurrencyRegex = text.match(/(?:€|eur|usd|\$)\s*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s*(?:€|eur|usd|\$)/);
+
+  const weightValue = weightFromRegex
+    ? Number(weightFromRegex[1].replace(',', '.'))
+    : numericCells[0] ?? null;
+
+  let priceValue = null;
+  if (hasCurrencyToken && priceFromCurrencyRegex) {
+    priceValue = Number((priceFromCurrencyRegex[1] || priceFromCurrencyRegex[2]).replace(',', '.'));
+  } else if (numericCells.length >= 2) {
+    priceValue = numericCells[1];
+  }
+
+  if (weightValue === null || priceValue === null) return null;
 
   const zoneInRow = knownZones.find(zone => text.includes(zone));
 
   return {
-    max: Number(weightMatch[1].replace(',', '.')),
-    price: Number(priceMatch[1].replace(',', '.')),
+    max: weightValue,
+    price: priceValue,
     ...(zoneInRow ? { zone: zoneInRow } : {})
   };
 }

@@ -64,6 +64,9 @@ npm run dev
 docker compose up --build
 ```
 
+Configuración útil:
+- `MAX_UPLOAD_MB` (por defecto `10`) para limitar tamaño de archivos en upload con Multer memoryStorage.
+
 ## Roadmap inmediato
 
 1. Conectar Supabase real (DB + Auth + Storage) con tus credenciales.

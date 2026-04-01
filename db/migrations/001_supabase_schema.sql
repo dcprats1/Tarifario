@@ -93,18 +93,13 @@ create index if not exists idx_weight_tiers_provider_id on public.weight_tiers(p
 create index if not exists idx_upload_jobs_tenant_created on public.upload_jobs(tenant_id, created_at desc);
 create index if not exists idx_export_jobs_provider_created on public.export_jobs(provider_id, created_at desc);
 
-alter table public.roles enable row level security;
-alter table public.profiles enable row level security;
-alter table public.providers enable row level security;
-alter table public.tariff_rules enable row level security;
-alter table public.weight_tiers enable row level security;
-alter table public.upload_jobs enable row level security;
-alter table public.export_jobs enable row level security;
 
 create or replace function public.is_admin()
 returns boolean
 language sql
 stable
+security definer
+set search_path = public
 as $$
   select exists (
     select 1
@@ -113,6 +108,18 @@ as $$
     where p.id = auth.uid() and r.code = 'admin'
   );
 $$;
+
+create policy "roles readable to authenticated" on public.roles
+for select
+using (auth.role() = 'authenticated');
+
+alter table public.roles enable row level security;
+alter table public.profiles enable row level security;
+alter table public.providers enable row level security;
+alter table public.tariff_rules enable row level security;
+alter table public.weight_tiers enable row level security;
+alter table public.upload_jobs enable row level security;
+alter table public.export_jobs enable row level security;
 
 create policy "profiles self read" on public.profiles
 for select using (id = auth.uid() or public.is_admin());
