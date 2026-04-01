@@ -1,11 +1,14 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 import { store } from '../data/store.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const envSecret = process.env.JWT_SECRET;
+const runtimeSecret = randomBytes(64).toString('hex');
+const JWT_SECRET = envSecret && envSecret.length >= 32 ? envSecret : runtimeSecret;
 
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
-  throw new Error('JWT_SECRET es obligatorio y debe tener al menos 32 caracteres.');
+if (!envSecret || envSecret.length < 32) {
+  console.warn('[auth] JWT_SECRET no definido (o demasiado corto). Se usa un secreto efímero seguro para esta sesión.');
 }
 
 export function login(email, password) {
