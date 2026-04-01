@@ -1,42 +1,38 @@
 # 📖 Manual de uso - Analizador de Tarifas AI
 
-## 1) ¿Qué hace la aplicación?
+## 1) Inicio de sesión
 
-Te permite subir tarifarios de transportistas y convertirlos en reglas comparables para calcular precios finales de envío.
+Usa una cuenta demo:
+- **admin**: `admin@tarifario.local` / `Admin123!`
+- **operador**: `operador@tarifario.local` / `Operador123!`
+- **viewer**: `viewer@tarifario.local` / `Viewer123!`
 
-## 2) Uso rápido
+## 2) Cargar tarifario
 
-1. Abre la aplicación web.
-2. En **Subir tarifario**, selecciona un archivo (PDF, Excel, CSV, TXT, Word).
-3. (Opcional) indica nombre del transportista.
-4. Pulsa **Subir y procesar**.
-5. En **Calcular envío** completa:
-   - tipo de bulto,
-   - zona destino,
-   - peso y medidas,
-   - valor asegurado.
-6. Pulsa **Comparar precios**.
-7. Revisa:
-   - tabla de costes ordenada por mejor precio,
-   - comparativa global de condiciones por proveedor.
+1. Inicia sesión.
+2. En “Subir tarifario”, selecciona archivo (PDF, Excel, CSV, TXT, DOC/DOCX).
+3. Opcional: escribe nombre de transportista.
+4. Pulsa “Subir y procesar”.
 
-## 3) Qué interpreta automáticamente
+## 3) Comparar precios
 
-- Peso tarificable (real vs volumétrico)
-- Tramo base por peso
-- Recargo combustible (%)
-- Seguro (%)
-- Penalización por exceso de peso
+1. Completa bulto, zona, peso y medidas.
+2. Pulsa “Comparar precios”.
+3. Revisa resultados ordenados por total.
 
-## 4) Limitaciones actuales
+## 4) Exportar
 
-- La información se guarda en memoria (si reinicias servidor, se pierde).
-- El parser es heurístico: funciona bien para formatos comunes, pero no para todos los diseños complejos.
+1. Ve a “Exportaciones”.
+2. Selecciona tarifario.
+3. Selecciona formato (`csv`, `xlsx`, `json`).
+4. Pulsa exportar y descarga.
 
-## 5) URLs de trabajo
+## 5) Notas técnicas importantes
 
-- Frontend: `http://localhost:5173`
-- API backend: `http://localhost:3001`
+- El parser usa enfoque híbrido:
+  - Capa 1: heurística local.
+  - Capa 2: LLM (Groq/DeepSeek) si la confianza es baja.
+- La persistencia completa está preparada para Supabase (schema SQL incluido), pero aún no está conectada.
 
 ---
 Manual actualizado: **1 de abril de 2026**

@@ -1,57 +1,73 @@
 # Analizador de Tarifas de Transporte y Paquetería AI
 
-Aplicación full-stack (React + Node.js) para cargar tarifarios, interpretar reglas y calcular precios comparados entre transportistas.
+Aplicación full-stack para cargar, interpretar, comparar y exportar tarifarios de transporte.
 
-## ✅ Estado actual
+## Estado actual (fase 2)
 
-Esta versión ya incluye:
+### Backend/API
+- Upload y parsing de documentos: PDF, Excel, CSV, TXT, DOC/DOCX.
+- Parser determinista/heurístico como primera capa.
+- Capa híbrida LLM preparada con proveedores intercambiables:
+  - Groq (por defecto)
+  - DeepSeek (alternativa)
+- Autenticación básica JWT + roles (`admin`, `operador`, `viewer`) preparada para migrar a Supabase Auth.
+- Exportaciones implementadas vía `POST /api/export`:
+  - `csv`
+  - `xlsx`
+  - `json`
 
-- Upload de documentos: **PDF, Excel, CSV, TXT, DOC/DOCX**.
-- Parser inteligente inicial que detecta:
-  - Tramos de peso/precio
-  - Factor volumétrico
-  - Recargo combustible
-  - Seguro
-  - Penalización por sobrepeso
-- Calculadora de envío por tipo de bulto, peso, medidas y zona.
-- Comparativa global entre transportistas cargados.
-- API REST para integración con TMS/comparadores.
+### Frontend
+- Login en UI.
+- Upload de tarifarios.
+- Calculadora de envío y comparación entre proveedores.
+- Descarga de exportaciones (CSV/XLSX/JSON).
 
-## Arquitectura
+## Endpoints principales
 
-- **Frontend**: React + Vite (`client/`)
-- **Backend**: Node.js + Express (`server/`)
-- **Procesamiento**:
-  - `xlsx` para Excel
-  - `csv-parse` para CSV
-  - `pdf-parse` para PDF
-  - `mammoth` para Word
+### Auth
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
-## Puesta en marcha
+### Tarifarios
+- `POST /api/upload`
+- `GET /api/tariffs`
+- `POST /api/quote`
+- `GET /api/comparison`
+- `POST /api/export`
+
+## Supabase-ready (sin conexión aún)
+
+Se añadió esquema SQL completo en:
+- `db/migrations/001_supabase_schema.sql`
+
+Incluye:
+- tablas principales,
+- relaciones,
+- índices,
+- base de políticas RLS,
+- función helper `is_admin()`.
+
+## npm install (403 Forbidden)
+
+Se añadió `.npmrc` para usar mirror alternativo y evitar restricciones del registry principal en entornos bloqueados.
+
+## Ejecución local
 
 ```bash
 npm install
 npm run dev
 ```
 
-Servicios:
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3001`
+## Docker
 
-## Endpoints principales
+```bash
+docker compose up --build
+```
 
-- `POST /api/upload` → sube y procesa un tarifario
-- `GET /api/tariffs` → lista transportistas cargados
-- `POST /api/quote` → calcula comparativa de precios
-- `GET /api/comparison` → resumen de reglas y recargos
+## Roadmap inmediato
 
-## Próximos pasos recomendados
-
-- Persistencia en base de datos (actualmente memoria).
-- Normalización avanzada por plantillas de proveedor.
-- Exportación directa a CSV/XLSX/JSON desde interfaz.
-- Autenticación y multiusuario.
-
-## Licencia
-
-MIT
+1. Conectar Supabase real (DB + Auth + Storage) con tus credenciales.
+2. Reemplazar auth JWT local por Supabase Auth end-to-end.
+3. Persistir proveedores, reglas, export jobs y uploads en PostgreSQL.
+4. Afinar parser híbrido con score de confianza trazable por campo.
+5. Añadir test suite (API + parser + exportaciones).

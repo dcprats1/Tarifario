@@ -31,11 +31,15 @@ export function parseTariff({ rows, providerHint, sourceFile }) {
   const parsedTiers = rows.map(parseRowToTier).filter(Boolean);
   const weightTiers = parsedTiers.length > 0 ? parsedTiers : defaultWeightTiers;
 
+  const confidenceBase = parsedTiers.length > 0 ? 0.75 : 0.45;
+  const confidence = Math.min(0.95, confidenceBase + Math.min(parsedTiers.length * 0.02, 0.2));
+
   const zones = ['local', 'nacional', 'internacional'];
 
   return {
     name: providerName,
     sourceFile,
+    confidence,
     rules: {
       zones,
       packageTypes: ['sobre', 'paquete', 'palet'],
