@@ -5,7 +5,7 @@ Aplicación full-stack para cargar, interpretar, comparar y exportar tarifarios 
 ## Estado actual (fase 2)
 
 ### Backend/API
-- Upload y parsing de documentos: PDF, Excel, CSV, TXT, DOC/DOCX.
+- Upload y parsing de documentos: PDF, Excel, CSV, TXT, DOCX.
 - Parser determinista/heurístico como primera capa.
 - Capa híbrida LLM preparada con proveedores intercambiables:
   - Groq (por defecto)

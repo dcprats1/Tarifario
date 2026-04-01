@@ -35,7 +35,7 @@ export default function UploadPanel({ onUploaded }) {
         />
         <input
           type="file"
-          accept=".pdf,.csv,.xlsx,.xls,.txt,.doc,.docx"
+          accept=".pdf,.csv,.xlsx,.xls,.txt,.docx"
           onChange={e => setFile(e.target.files?.[0] || null)}
         />
         <button type="submit" disabled={!file || loading}>

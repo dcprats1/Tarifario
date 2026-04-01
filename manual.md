@@ -10,7 +10,7 @@ Usa una cuenta demo:
 ## 2) Cargar tarifario
 
 1. Inicia sesión.
-2. En “Subir tarifario”, selecciona archivo (PDF, Excel, CSV, TXT, DOC/DOCX).
+2. En “Subir tarifario”, selecciona archivo (PDF, Excel, CSV, TXT, DOCX).
 3. Opcional: escribe nombre de transportista.
 4. Pulsa “Subir y procesar”.
 

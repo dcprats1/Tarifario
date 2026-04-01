@@ -34,9 +34,13 @@ export async function extractRawRows(file) {
     return data.text.split('\n').map(line => [line]);
   }
 
-  if (ext === 'docx' || ext === 'doc') {
+  if (ext === 'docx') {
     const data = await mammoth.extractRawText({ buffer: file.buffer });
     return data.value.split('\n').map(line => [line]);
+  }
+
+  if (ext === 'doc') {
+    throw new Error('Formato .doc (Word legado) no soportado aún. Convierte el archivo a .docx e inténtalo de nuevo.');
   }
 
   throw new Error('Formato no soportado');

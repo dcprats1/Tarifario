@@ -6,6 +6,16 @@ const defaultWeightTiers = [
   { max: 30, price: 19.4 }
 ];
 
+const knownZones = ['local', 'nacional', 'internacional'];
+
+function normalizeZone(value = '') {
+  const text = value.toLowerCase().trim();
+  if (text.includes('inter')) return 'internacional';
+  if (text.includes('nac')) return 'nacional';
+  if (text.includes('loc')) return 'local';
+  return text;
+}
+
 function findNumber(text, pattern, fallback) {
   const match = text.match(pattern);
   return match ? Number(match[1].replace(',', '.')) : fallback;
@@ -18,9 +28,12 @@ function parseRowToTier(row) {
   const priceMatch = text.match(/(\d+(?:[.,]\d+)?)\s?€/);
   if (!weightMatch || !priceMatch) return null;
 
+  const zoneInRow = knownZones.find(zone => text.includes(zone));
+
   return {
     max: Number(weightMatch[1].replace(',', '.')),
-    price: Number(priceMatch[1].replace(',', '.'))
+    price: Number(priceMatch[1].replace(',', '.')),
+    ...(zoneInRow ? { zone: zoneInRow } : {})
   };
 }
 
@@ -34,7 +47,7 @@ export function parseTariff({ rows, providerHint, sourceFile }) {
   const confidenceBase = parsedTiers.length > 0 ? 0.75 : 0.45;
   const confidence = Math.min(0.95, confidenceBase + Math.min(parsedTiers.length * 0.02, 0.2));
 
-  const zones = ['local', 'nacional', 'internacional'];
+  const zones = knownZones;
 
   return {
     name: providerName,
@@ -43,6 +56,11 @@ export function parseTariff({ rows, providerHint, sourceFile }) {
     rules: {
       zones,
       packageTypes: ['sobre', 'paquete', 'palet'],
+      zoneMultipliers: {
+        local: findNumber(compactText, /local\s*(\d+(?:[.,]\d+)?)/, 1),
+        nacional: findNumber(compactText, /nacional\s*(\d+(?:[.,]\d+)?)/, 1.15),
+        internacional: findNumber(compactText, /internacional\s*(\d+(?:[.,]\d+)?)/, 1.35)
+      },
       maxWeightKg: findNumber(compactText, /max(?:imo)?\s*(\d+(?:[.,]\d+)?)/, 40),
       volumetricDivisor: findNumber(compactText, /volum(?:etrico)?\s*[/:]\s*(\d+(?:[.,]\d+)?)/, 5000),
       fuelSurchargePct: findNumber(compactText, /combustible\s*(\d+(?:[.,]\d+)?)/, 12),
@@ -52,3 +70,5 @@ export function parseTariff({ rows, providerHint, sourceFile }) {
     }
   };
 }
+
+export { normalizeZone };
