@@ -1,62 +1,42 @@
-# 📖 MANUAL DE USUARIO - Analizador de Tarifas de Transporte AI
+# 📖 Manual de uso - Analizador de Tarifas AI
 
-**Versión 1.0** (inicial)
+## 1) ¿Qué hace la aplicación?
 
-## ¿Qué es esta aplicación?
+Te permite subir tarifarios de transportistas y convertirlos en reglas comparables para calcular precios finales de envío.
 
-Es una herramienta que **lee y entiende** los tarifarios complicados de transportistas (Seur, MRW, DHL, UPS, Correos, etc.) y te permite:
+## 2) Uso rápido
 
-- Entenderlos fácilmente
-- Calcular precios reales en segundos
-- Comparar todos los transportistas de forma clara
-- Exportar las tablas para usarlas en tu programa de gestión
+1. Abre la aplicación web.
+2. En **Subir tarifario**, selecciona un archivo (PDF, Excel, CSV, TXT, Word).
+3. (Opcional) indica nombre del transportista.
+4. Pulsa **Subir y procesar**.
+5. En **Calcular envío** completa:
+   - tipo de bulto,
+   - zona destino,
+   - peso y medidas,
+   - valor asegurado.
+6. Pulsa **Comparar precios**.
+7. Revisa:
+   - tabla de costes ordenada por mejor precio,
+   - comparativa global de condiciones por proveedor.
 
----
+## 3) Qué interpreta automáticamente
 
-## Cómo usar paso a paso (muy fácil)
+- Peso tarificable (real vs volumétrico)
+- Tramo base por peso
+- Recargo combustible (%)
+- Seguro (%)
+- Penalización por exceso de peso
 
-### 1. Subir un tarifario
-- Haz clic en **“Subir documento”**
-- Selecciona tu PDF, Excel, CSV, Word…
-- Espera unos segundos mientras la IA lo lee y entiende todo
+## 4) Limitaciones actuales
 
-### 2. Consultar precios
-- Elige el **tipo de bulto**: Sobre, Paquete, Palet, etc.
-- Introduce **peso** y **medidas**
-- Escribe o selecciona el **rango de destino** (o código postal)
-- Pulsa **Calcular**
+- La información se guarda en memoria (si reinicias servidor, se pierde).
+- El parser es heurístico: funciona bien para formatos comunes, pero no para todos los diseños complejos.
 
-→ Verás una tabla con **todos los transportistas** ordenados por precio final.
+## 5) URLs de trabajo
 
-### 3. Comparativa Global
-Ve a la pestaña **“Comparativa General”**.
-Ahí verás de un vistazo:
-- ¿Qué transportista permite más peso?
-- ¿Quién cobra menos recargo de combustible?
-- ¿Quién tiene seguro obligatorio más barato?
-- Limitaciones de medidas, penalizaciones, etc.
-
-### 4. Exportar
-- Botón **“Exportar tabla”** → Excel o CSV
-- Botón **“Exportar comparativa”** → listo para enviar por email o usar en tu TMS
+- Frontend: `http://localhost:5173`
+- API backend: `http://localhost:3001`
 
 ---
-
-## Preguntas frecuentes (FAQ)
-
-**¿Puedo subir varios documentos a la vez?**
-→ Sí, en futuras versiones (actualmente uno por uno).
-
-**¿Los datos quedan guardados?**
-→ Solo dentro de tu cuenta (nada se comparte).
-
-**¿Funciona con tarifarios muy complejos?**
-→ Sí. La IA está entrenada específicamente para entender recargos, volumétricos y condiciones especiales.
-
----
-
-**¿Necesitas ayuda?**
-Abre un Issue en GitHub o contacta con el desarrollador.
-
----
-*Manual actualizado: 01 de abril de 2026*
+Manual actualizado: **1 de abril de 2026**

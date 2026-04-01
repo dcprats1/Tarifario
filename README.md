@@ -1,58 +1,57 @@
 # Analizador de Tarifas de Transporte y Paquetería AI
 
-**Una herramienta inteligente que lee, entiende y compara tarifarios de transportistas y paquetería.**
+Aplicación full-stack (React + Node.js) para cargar tarifarios, interpretar reglas y calcular precios comparados entre transportistas.
 
-Sube cualquier documento (PDF, Excel, CSV, TXT, Word…) y la aplicación extrae automáticamente rangos de destino, pesos, medidas, fórmulas volumétricas, recargos, penalizaciones y todas las reglas comerciales. Luego genera tablas consultables y una comparativa clara entre transportistas.
+## ✅ Estado actual
 
----
+Esta versión ya incluye:
 
-## ✨ Características principales
+- Upload de documentos: **PDF, Excel, CSV, TXT, DOC/DOCX**.
+- Parser inteligente inicial que detecta:
+  - Tramos de peso/precio
+  - Factor volumétrico
+  - Recargo combustible
+  - Seguro
+  - Penalización por sobrepeso
+- Calculadora de envío por tipo de bulto, peso, medidas y zona.
+- Comparativa global entre transportistas cargados.
+- API REST para integración con TMS/comparadores.
 
-- **Lectura inteligente** de tarifarios en múltiples formatos (PDF, Excel, CSV, TXT, DOCX, etc.)
-- **Interpretación automática** de:
-  - Rangos de destino / zonas
-  - Pesos y medidas
-  - Fórmulas volumétricas
-  - Recargos (combustible, seguro, etc.)
-  - Penalizaciones y limitaciones
-- **Calculadora intuitiva**: introduce tipo de bulto (sobre, paquete, palet…), peso, medidas y destino → te muestra **todos los transportistas** con precio final calculado.
-- **Tablas exportables** (CSV, Excel, JSON) listas para usar en TMS, comparadores o calculadoras propias.
-- **Suite de Comparación Global** automática: límites de peso/medidas, % recargo combustible, seguro obligatorio, etc.
-- **Actualización continua del README** y documentación con cada mejora.
+## Arquitectura
 
----
+- **Frontend**: React + Vite (`client/`)
+- **Backend**: Node.js + Express (`server/`)
+- **Procesamiento**:
+  - `xlsx` para Excel
+  - `csv-parse` para CSV
+  - `pdf-parse` para PDF
+  - `mammoth` para Word
 
-## Cómo usar
+## Puesta en marcha
 
-1. Sube tu tarifario (PDF, Excel, etc.)
-2. La IA lo procesa y genera las tablas
-3. En la calculadora introduce los datos del envío
-4. Obtén precios comparados al instante
-5. Exporta las tablas o la comparativa
+```bash
+npm install
+npm run dev
+```
 
----
+Servicios:
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3001`
 
-## Próximos pasos (Roadmap)
+## Endpoints principales
 
-- [ ] Soporte multi-idioma en tarifarios
-- [ ] Integración directa con APIs de transportistas
-- [ ] Modo “batch” para procesar múltiples documentos
-- [ ] Historial de tarifarios subidos
-- [ ] Dashboard con gráficos comparativos
+- `POST /api/upload` → sube y procesa un tarifario
+- `GET /api/tariffs` → lista transportistas cargados
+- `POST /api/quote` → calcula comparativa de precios
+- `GET /api/comparison` → resumen de reglas y recargos
 
----
+## Próximos pasos recomendados
 
-## Tecnologías (se irán añadiendo)
-
-- Frontend: React
-- Backend + IA: por definir
-- Procesamiento de documentos: por definir
-
----
-
-**Este README se actualizará automáticamente con cada nueva funcionalidad o ajuste.**
-
----
+- Persistencia en base de datos (actualmente memoria).
+- Normalización avanzada por plantillas de proveedor.
+- Exportación directa a CSV/XLSX/JSON desde interfaz.
+- Autenticación y multiusuario.
 
 ## Licencia
-MIT (puedes cambiarla después)
+
+MIT
