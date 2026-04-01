@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  tarifario:
+    build: .
+    container_name: tarifario_app
+    ports:
+      - "3001:3001"
+      - "5173:5173"
+    environment:
+      - PORT=3001
+      - JWT_SECRET=change-this
+      - LLM_PROVIDER=groq
+      - PARSER_CONFIDENCE_THRESHOLD=0.65
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ./:/app
+    command: sh -c "npm install --workspaces --include-workspace-root || true && npm run dev"
